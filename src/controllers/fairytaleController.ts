@@ -1,28 +1,48 @@
 import express, { Request, Response } from 'express';
+const request = require('request');
 const util = require('../modules/util');
 const statusCode = require('../modules/statusCode');
 const resMessage = require('../modules/responseMessage');
 const fairytaleDao = require('../dao/fairytale');
+const appKey = require('../config/apiConfig.ts');
 
 module.exports = {
   /*
    * function name : trimNewSentence
-   * feature : KoGPT에서 생성한 문자열을 받아 온점, 물음표, 느낌표를 기준으로 split하여 첫 문장을 반환합니다.
-   * req : API로부터 생성된 문장
+   * feature : KoGPT를 호출해 생성한 문자열을 받아 온점, 물음표, 느낌표를 기준으로 split하여 첫 문장을 반환합니다.
+   * req : input 문장
    * res : split 처리 된 첫번째 문장
    */
   trimNewSentence: async (req: Request, res: Response) => {
-    //req로 변경 필요. 여기서 바로 API 호출할 수 있나?
-    const createdText = ' 백설공주에게는 난쟁이 친구가 있었어요. 피터팬은 늘 백설공주와 함께 놀고 싶어했어요! 그래서 둘은 다투기도 하고 또 서로를';
+    const sentence = '백설공주와 피터팬은 친한 친구였어요.'; //클라이언트에서 받은 것으로 교체 필요
 
-    if (!createdText) {
-      return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
-    }
+    const options = {
+      uri: 'https://api.kakaobrain.com/v1/inference/kogpt/generation',
+      method: 'POST',
+      body: {
+        prompt: sentence,
+        max_tokens: 50,
+        temperature: 0.6,
+        n: 1,
+      },
+      json: true,
+      headers: {
+        Authorization: 'KakaoAK ' + appKey.KoGPT,
+      },
+    };
+    request.post(options, function (err: Error, httpResponse: Response, body: Object) {
+      //const createdText = body; <--text만 추출해서 아래와 교체
+      const createdText = ' 백설공주에게는 난쟁이 친구가 있었어요. 피터팬은 늘 백설공주와 함께 놀고 싶어했어요! 그래서 둘은 다투기도 하고 또 서로를';
 
-    const splitedText = createdText.split(/(\!|\.|\?)/); //., ?, !로 문장 split
-    const finalText = splitedText[0].trimStart() + splitedText[1];
+      if (!createdText) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+      }
 
-    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, finalText));
+      const splitedText = createdText.split(/(\!|\.|\?)/); //., ?, !로 문장 split
+      const finalText = splitedText[0].trimStart() + splitedText[1];
+
+      res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, finalText));
+    });
   },
 
   /*
