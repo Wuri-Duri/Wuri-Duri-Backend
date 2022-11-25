@@ -23,6 +23,8 @@
     "dev": "nodemon --watch \"src/**/*.ts\" --exec \"ts-node\" src/app.ts"
   },
   "dependencies": {
-    "promise-mysql": "^5.2.0"
+    "dotenv": "^16.0.3",
+    "promise-mysql": "^5.2.0",
+    "request": "^2.88.2"
   }
 }
