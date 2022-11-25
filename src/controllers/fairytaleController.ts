@@ -6,6 +6,17 @@ const resMessage = require('../modules/responseMessage');
 const fairytaleDao = require('../dao/fairytale');
 const appKey = require('../config/apiConfig.ts');
 
+interface Generations {
+  text: String;
+  tokens: Number;
+}
+
+interface Sentence {
+  id: String;
+  generations: Generations[];
+  usage: Object;
+}
+
 module.exports = {
   /*
    * function name : trimNewSentence
@@ -30,9 +41,8 @@ module.exports = {
         Authorization: 'KakaoAK ' + appKey.KoGPT,
       },
     };
-    request.post(options, function (err: Error, httpResponse: Response, body: Object) {
-      //const createdText = body; <--text만 추출해서 아래와 교체
-      const createdText = ' 백설공주에게는 난쟁이 친구가 있었어요. 피터팬은 늘 백설공주와 함께 놀고 싶어했어요! 그래서 둘은 다투기도 하고 또 서로를';
+    request.post(options, function (err: Error, response: Response, body: Sentence) {
+      const createdText = body.generations[0].text;
 
       if (!createdText) {
         return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
