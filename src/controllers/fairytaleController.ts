@@ -7,6 +7,9 @@ const kogpt = require('../modules/kogpt');
 const fairytaleDB = require('../dao/fairytale');
 
 module.exports = {
+  /*
+   * 첫 문장 생성 함수
+   */
   createFirstSentence: async (req: Request, res: Response) => {
     const { numOfPeople, backgroundPlace, lengthOfBook } = req.body;
 
@@ -47,6 +50,9 @@ module.exports = {
     );
   },
 
+  /*
+   * 2~마지막 문장 생성 함수
+   */
   createNewSentence: async (req: Request, res: Response) => {
     const { inputSentence } = req.body;
 
@@ -58,6 +64,9 @@ module.exports = {
     }
   },
 
+  /*
+   * 창작 반복 끝난 후 제목 입력 받고 사용자 계정에 완성된 책 생성 함수
+   */
   createNewBook: async (req: Request, res: Response) => {
     const { userIdx, title, lengthOfBook, characters, backgroundPlace, contents } = req.body;
 
@@ -75,6 +84,9 @@ module.exports = {
     }
   },
 
+  /*
+   * 메인뷰 진입시 전체 책 목록 받아오는 함수
+   */
   readUserInfo: async (req: Request, res: Response) => {
     //main view에 들어왔을 때 user_id를 받아 전체 책 목록을 로드
     const userIDX = req.params;
@@ -91,6 +103,9 @@ module.exports = {
     }
   },
 
+  /*
+   * 책 클릭 시 내용 받아오는 함수
+   */
   readBook: async (req: Request, res: Response) => {
     //book 하나를 눌렀을 때 콘텐츠 받아오기
     const bookIDX = req.params;

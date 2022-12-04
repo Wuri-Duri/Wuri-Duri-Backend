@@ -12,7 +12,7 @@ module.exports = {
    * function name : signIn
    * feature : 회원가입/로그인
    * req : 계정 정보
-   * res : jwt token
+   * res : user idx, jwt token
    */
   login: async (req: Request, res: Response) => {
     const { snsId, username } = req.body;
