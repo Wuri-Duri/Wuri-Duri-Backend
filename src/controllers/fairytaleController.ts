@@ -1,56 +1,65 @@
 import { Request, Response } from 'express';
-const request = require('request');
+const _ = require('lodash');
 const util = require('../modules/util');
 const statusCode = require('../modules/statusCode');
 const resMessage = require('../modules/responseMessage');
+const kogpt = require('../modules/kogpt');
 const fairytaleDao = require('../dao/fairytale');
-const appKey = require('../config/apiConfig.ts');
-
-interface Generations {
-  text: String;
-  tokens: Number;
-}
-
-interface Sentence {
-  id: String;
-  generations: Generations[];
-  usage: Object;
-}
 
 module.exports = {
-  /*
-   * function name : trimNewSentence
-   * feature : KoGPT를 호출해 생성한 문자열을 받아 온점, 물음표, 느낌표를 기준으로 split하여 첫 문장을 반환합니다.
-   * req : input 문장
-   * res : split 처리 된 첫번째 문장
-   */
-  trimNewSentence: async (req: Request, res: Response) => {
-    const sentence = '백설공주와 피터팬은 친한 친구였어요.'; //클라이언트에서 받은 것으로 교체 필요
+  createFirstSentence: async (req: Request, res: Response) => {
+    const { numOfPeople, backgroundPlace, lengthOfBook } = req.body;
 
-    const options = {
-      uri: 'https://api.kakaobrain.com/v1/inference/kogpt/generation',
-      method: 'POST',
-      body: {
-        prompt: sentence,
-        max_tokens: 50,
-        temperature: 0.6,
-        n: 1,
-      },
-      json: true,
-      headers: {
-        Authorization: 'KakaoAK ' + appKey.KoGPT,
-      },
-    };
-    request.post(options, function (err: Error, response: Response, body: Sentence) {
-      if (response.statusCode !== 200) {
-        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.KoGPT_ERROR));
-      }
+    if (!numOfPeople || !backgroundPlace || !lengthOfBook) {
+      return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+    }
 
-      const createdText = body.generations[0].text;
-      const splitedText = createdText.split(/(\!|\.|\?)/); //., ?, !로 문장 split
-      const finalText = splitedText[0].trimStart() + splitedText[1];
+    const listOfCharacters = ['피터팬', '신데렐라', '콩쥐', '백설공주', '앨리스', '라푼젤', '헨젤', '흥부'];
+    const char = _.sampleSize(listOfCharacters, numOfPeople); //랜덤 캐릭터 최대 2인
+    const lastNamesGrammer = [];
 
-      res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, finalText));
-    });
+    for (let i = 0; i < char.length; i++) {
+      if ((char[i].charAt(char[i].length - 1).charCodeAt(0) - 44032) % 28 > 0) lastNamesGrammer.push(['이', '은', '을']);
+      else lastNamesGrammer.push(['가', '는', '를']);
+    }
+
+    let firstSentence = `어느 한 마을에 ${char[0] + lastNamesGrammer[0][0]} 살았어요. ${char[0] + lastNamesGrammer[0][1]} `;
+    try {
+      const result = await kogpt.makeNewSentence(firstSentence);
+      firstSentence += result;
+    } catch (err) {
+      return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.KoGPT_ERROR));
+    }
+
+    if (numOfPeople >= 2) {
+      firstSentence += ` 하루는 ${char[0] + lastNamesGrammer[0][1]} ${char[1] + lastNamesGrammer[1][2]} 만나러 ${backgroundPlace}에 갔어요.`;
+    } else {
+      firstSentence += ` 하루는 ${char[0] + lastNamesGrammer[0][1]} ${backgroundPlace}에 갔어요.`;
+    }
+
+    return res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, firstSentence));
+  },
+
+  createNewSentence: async (req: Request, res: Response) => {
+    const { inputSentence } = req.body;
+
+    try {
+      const result = await kogpt.makeNewSentence(inputSentence);
+      return res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, result));
+    } catch (err) {
+      return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.KoGPT_ERROR));
+    }
+  },
+
+  createNewBook: async (req: Request, res: Response) => {
+    //전체 문장을 DB에 저장
+  },
+
+  readUserInfo: async (req: Request, res: Response) => {
+    //main view에 들어왔을 때 user_id를 받아 전체 책 목록을 로드
+  },
+
+  readBook: async (req: Request, res: Response) => {
+    //book 하나를 눌렀을 때 콘텐츠 받아오기
   },
 };
