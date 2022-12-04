@@ -2,4 +2,5 @@
 
 module.exports = {
   createUser: async (hey: String) => {},
+  getUserById: async (hey: String) => {},
 };

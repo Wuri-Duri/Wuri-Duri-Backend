@@ -13,6 +13,7 @@ app.listen(port, () => {
 `);
 });
 
+app.use(express.json());
 app.use('/', indexRouter);
 
 module.exports = app;
