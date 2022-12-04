@@ -59,14 +59,16 @@ module.exports = {
   },
 
   createNewBook: async (req: Request, res: Response) => {
-    const { title, lengthOfBook, characters, backgroundPlace, contents } = req.body;
+    const { userIdx, title, lengthOfBook, characters, backgroundPlace, contents } = req.body;
 
-    if (!title || !lengthOfBook || !characters || !backgroundPlace || !contents) {
+    if (!userIdx || !title || !lengthOfBook || !characters || !backgroundPlace || !contents) {
       return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
     }
 
+    const charList = characters.join();
+
     try {
-      const bookID = await fairytaleDB.createBook(title, lengthOfBook, characters, backgroundPlace, contents);
+      const bookID = await fairytaleDB.createBook(userIdx, title, lengthOfBook, charList, backgroundPlace, contents);
       res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, bookID));
     } catch (err) {
       return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
