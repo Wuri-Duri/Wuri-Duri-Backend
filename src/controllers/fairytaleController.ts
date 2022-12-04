@@ -4,7 +4,7 @@ const util = require('../modules/util');
 const statusCode = require('../modules/statusCode');
 const resMessage = require('../modules/responseMessage');
 const kogpt = require('../modules/kogpt');
-const fairytaleDao = require('../dao/fairytale');
+const fairytaleDB = require('../dao/fairytale');
 
 module.exports = {
   createFirstSentence: async (req: Request, res: Response) => {
@@ -37,7 +37,14 @@ module.exports = {
       firstSentence += ` 하루는 ${char[0] + lastNamesGrammer[0][1]} ${backgroundPlace}에 갔어요.`;
     }
 
-    return res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, firstSentence));
+    return res.status(statusCode.OK).send(
+      util.success(statusCode.OK, resMessage.OK, {
+        characters: char,
+        length: lengthOfBook,
+        background: backgroundPlace,
+        firstSentence: firstSentence,
+      }),
+    );
   },
 
   createNewSentence: async (req: Request, res: Response) => {
@@ -52,14 +59,49 @@ module.exports = {
   },
 
   createNewBook: async (req: Request, res: Response) => {
-    //전체 문장을 DB에 저장
+    const { title, lengthOfBook, characters, backgroundPlace, contents } = req.body;
+
+    if (!title || !lengthOfBook || !characters || !backgroundPlace || !contents) {
+      return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+    }
+
+    try {
+      const bookID = await fairytaleDB.createBook(title, lengthOfBook, characters, backgroundPlace, contents);
+      res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, bookID));
+    } catch (err) {
+      return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
+    }
   },
 
   readUserInfo: async (req: Request, res: Response) => {
     //main view에 들어왔을 때 user_id를 받아 전체 책 목록을 로드
+    const userIDX = req.params;
+
+    if (!userIDX) {
+      return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+    }
+
+    try {
+      const totalBookList = await fairytaleDB.readUserInfo(userIDX);
+      res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, totalBookList));
+    } catch (err) {
+      return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
+    }
   },
 
   readBook: async (req: Request, res: Response) => {
     //book 하나를 눌렀을 때 콘텐츠 받아오기
+    const bookIDX = req.params;
+
+    if (!bookIDX) {
+      return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+    }
+
+    try {
+      const selectedBook = await fairytaleDB.readUserInfo(bookIDX);
+      res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, selectedBook));
+    } catch (err) {
+      return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
+    }
   },
 };

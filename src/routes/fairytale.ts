@@ -2,8 +2,9 @@ import express from 'express';
 const router = express.Router();
 const fairytaleController = require('../controllers/fairytaleController');
 
-router.get('/main/:userID', fairytaleController.readUserInfo);
-router.get('/book/:bookID', fairytaleController.readBook);
+//추후 checkUser middleware 추가 예정
+router.get('/main/:userIDX', fairytaleController.readUserInfo);
+router.get('/book/:bookIDX', fairytaleController.readBook);
 router.post('/create/first', fairytaleController.createFirstSentence);
 router.post('/create/others', fairytaleController.createNewSentence);
 router.post('/create', fairytaleController.createNewBook);
