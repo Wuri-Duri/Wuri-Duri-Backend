@@ -1,4 +1,6 @@
-module.exports = {
+export default {
+  OK: '통신에 성공했습니다.',
+
   NULL_VALUE: '필요한 값이 없습니다',
   OUT_OF_VALUE: '파라미터 값이 잘못되었습니다',
   NULL_ERROR: '오류가 발생했습니다',

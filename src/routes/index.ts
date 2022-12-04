@@ -1,12 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express';
-const router = express.Router();
+import { Router } from 'express';
+import fairytaleRouter from './fairytale';
+import userRouter from './user';
+const router = Router();
 
-/* GET home page. */
-router.get('/', function (req: Request, res: Response, next: NextFunction) {
-  res.send('Wuri-Duri');
-});
+router.use('/fairytale', fairytaleRouter);
+router.use('/user', userRouter);
 
-router.use('/fairytale', require('./fairytale'));
-router.use('/user', require('./user'));
-
-module.exports = router;
+export default router;

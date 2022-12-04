@@ -1,19 +1,21 @@
 import express from 'express';
-const indexRouter = require('./routes/index');
+import routes from './routes';
 
 const app = express();
 
+app.use(express.json());
+app.use(routes);
+
 const port: number = Number(process.env.PORT) || 3000;
-//app.set('port', port);
-app.listen(port, () => {
-  console.log(`
+app
+  .listen(port, () => {
+    console.log(`
   ################################################
           Server listening on port: ${port}
   ################################################
 `);
-});
-
-app.use(express.json());
-app.use('/', indexRouter);
-
-module.exports = app;
+  })
+  .on('error', error => {
+    console.error(error);
+    process.exit(1);
+  });

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   success: (status: number, message: String, data: Object) => {
     return {
       status: status,

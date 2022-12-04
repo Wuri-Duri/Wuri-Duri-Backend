@@ -1,6 +1,7 @@
-//const pool = require('../modules/pool');
+const createUser = async (hey: String) => {};
+const getUserById = async (hey: String) => {};
 
-module.exports = {
-  createUser: async (hey: String) => {},
-  getUserById: async (hey: String) => {},
+export default {
+  createUser,
+  getUserById,
 };
