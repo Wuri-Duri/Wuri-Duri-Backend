@@ -5,7 +5,7 @@ module.exports = {
     const fields = 'user_idx, title, length, characters, background, contents';
     const questions = `?, ?, ?, ?, ?, ?`;
     const values = [userIdx, title, lengthOfBook, charList, backgroundPlace, contents];
-    const query = `INSERT INTO Books (${fields}) VALUES (${questions})`;
+    const query = `INSERT INTO Book (${fields}) VALUES (${questions})`;
 
     try {
       const result = await pool.queryParamArr(query, values);
