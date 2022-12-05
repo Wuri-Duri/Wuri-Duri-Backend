@@ -54,11 +54,35 @@ const updateBookTitle = async (bookIdx: Number, title: String) => {
   }
 };
 
-// readUserInfo: async () => {},
-// readBook: async () => {},
+const readTotalBooks = async (userIDX?: String) => {
+  const query = `SELECT id, title, length, characters, background FROM Book WHERE user_idx = ${userIDX} AND is_finished = TRUE`;
+  //생성 완료된 책만 불러오기. 이후 기획 변경될 경우 수정 필요.
+
+  try {
+    const result = await pool.queryParam(query);
+    return result;
+  } catch (err) {
+    console.log('readTotalBooks ERROR : ', err);
+    throw err;
+  }
+};
+
+const readBook = async (bookIDX?: String) => {
+  const query = `SELECT sentences FROM Content WHERE book_idx = ${bookIDX} ORDER BY id ASC`;
+
+  try {
+    const result = await pool.queryParam(query);
+    return result;
+  } catch (err) {
+    console.log('readBook ERROR : ', err);
+    throw err;
+  }
+};
 
 export default {
   createBook,
   saveSentence,
   updateBookTitle,
+  readTotalBooks,
+  readBook,
 };

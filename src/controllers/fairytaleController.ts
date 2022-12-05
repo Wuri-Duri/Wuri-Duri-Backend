@@ -10,7 +10,17 @@ const _ = require('lodash');
  * 첫 문장 생성 함수
  */
 const createFirstSentence = async (req: Request, res: Response) => {
-  const { userIdx, numOfPeople, backgroundPlace, lengthOfBook } = req.body;
+  const {
+    userIdx,
+    numOfPeople,
+    backgroundPlace,
+    lengthOfBook,
+  }: {
+    userIdx: Number;
+    numOfPeople: Number;
+    backgroundPlace: String;
+    lengthOfBook: Number;
+  } = req.body;
 
   if (!userIdx || !numOfPeople || !backgroundPlace || !lengthOfBook) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
@@ -59,7 +69,7 @@ const createFirstSentence = async (req: Request, res: Response) => {
  */
 
 const createNewSentence = async (req: Request, res: Response) => {
-  const { bookIdx, inputSentence } = req.body;
+  const { bookIdx, inputSentence }: { bookIdx?: Number; inputSentence?: String } = req.body;
 
   if (!bookIdx || !inputSentence) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
@@ -80,7 +90,7 @@ const createNewSentence = async (req: Request, res: Response) => {
  * 창작 반복 끝난 후 제목 입력 받고 해당 책에 제목/완료상태 업데이트
  */
 const createNewBook = async (req: Request, res: Response) => {
-  const { bookIdx, title } = req.body;
+  const { bookIdx, title }: { bookIdx?: Number; title?: String } = req.body;
 
   if (!bookIdx || !title) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
@@ -97,17 +107,17 @@ const createNewBook = async (req: Request, res: Response) => {
 /*
  * 메인뷰 진입시 전체 책 목록 받아오는 함수
  */
-const readUserInfo = async (req: Request, res: Response) => {
-  //main view에 들어왔을 때 user_id를 받아 전체 책 목록을 로드
-  const userIDX = req.params;
+
+const readTotalBooks = async (req: Request, res: Response) => {
+  const { userIDX }: { userIDX?: String } = req.params;
 
   if (!userIDX) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
   }
 
   try {
-    //const totalBookList = await fairytaleDB.readUserInfo(userIDX);
-    //res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, totalBookList));
+    const totalBookList = await fairytaleDB.readTotalBooks(userIDX);
+    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, totalBookList as Object));
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
   }
@@ -118,15 +128,15 @@ const readUserInfo = async (req: Request, res: Response) => {
  */
 const readBook = async (req: Request, res: Response) => {
   //book 하나를 눌렀을 때 콘텐츠 받아오기
-  const bookIDX = req.params;
+  const { bookIDX }: { bookIDX?: String } = req.params;
 
   if (!bookIDX) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
   }
 
   try {
-    //const selectedBook = await fairytaleDB.readUserInfo(bookIDX);
-    //res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, selectedBook));
+    const selectedBook = await fairytaleDB.readBook(bookIDX);
+    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, selectedBook as Object));
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
   }
@@ -136,6 +146,6 @@ export default {
   createFirstSentence,
   createNewSentence,
   createNewBook,
-  readUserInfo,
+  readTotalBooks,
   readBook,
 };
