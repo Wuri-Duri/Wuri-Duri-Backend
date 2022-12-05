@@ -17,8 +17,6 @@ const createBook = async (userIdx: Number, lengthOfBook: Number, charList: Strin
   const values = [userIdx, lengthOfBook, charList, backgroundPlace];
   const query = `INSERT INTO Book (${fields}) VALUES (${questions})`;
 
-  //여기서 생성된 문장도 Content 테이블에 넣어야 함. 추가 필요!
-
   try {
     const result: any = await pool.queryParamArr(query, values); //오류 해결하기
     const insertId = result.insertId;
@@ -29,20 +27,17 @@ const createBook = async (userIdx: Number, lengthOfBook: Number, charList: Strin
   }
 };
 
-const saveSentences = async (bookIdx: Number, inputSentence: String, outputSentence: String) => {
+const saveSentence = async (bookIdx: Number, sentence: String) => {
   const fields = 'book_idx, sentences';
   const questions = `?, ?`;
-  const values1 = [bookIdx, inputSentence];
-  const values2 = [bookIdx, outputSentence];
+  const values = [bookIdx, sentence];
   const query = `INSERT INTO Content (${fields}) VALUES (${questions})`;
 
   try {
-    //더 좋은 방법 고민해보기.. 흠.
-    const result1 = await pool.queryParamArr(query, values1);
-    const result2 = await pool.queryParamArr(query, values2);
+    const result = await pool.queryParamArr(query, values);
     return true;
   } catch (err) {
-    console.log('saveSentences ERROR : ', err);
+    console.log('saveSentence ERROR : ', err);
     throw err;
   }
 };
@@ -59,11 +54,35 @@ const updateBookTitle = async (bookIdx: Number, title: String) => {
   }
 };
 
-// readUserInfo: async () => {},
-// readBook: async () => {},
+const readTotalBooks = async (userIDX?: String) => {
+  const query = `SELECT id, title, length, characters, background FROM Book WHERE user_idx = ${userIDX} AND is_finished = TRUE`;
+  //생성 완료된 책만 불러오기. 이후 기획 변경될 경우 수정 필요.
+
+  try {
+    const result = await pool.queryParam(query);
+    return result;
+  } catch (err) {
+    console.log('readTotalBooks ERROR : ', err);
+    throw err;
+  }
+};
+
+const readBook = async (bookIDX?: String) => {
+  const query = `SELECT sentences FROM Content WHERE book_idx = ${bookIDX} ORDER BY id ASC`;
+
+  try {
+    const result = await pool.queryParam(query);
+    return result;
+  } catch (err) {
+    console.log('readBook ERROR : ', err);
+    throw err;
+  }
+};
 
 export default {
   createBook,
-  saveSentences,
+  saveSentence,
   updateBookTitle,
+  readTotalBooks,
+  readBook,
 };
