@@ -8,31 +8,30 @@ const request = require('request');
 //const jwtHandlers = require('../../../lib/jwtHandlers');
 
 /*
- * function name : signIn
+ * function name : login
  * feature : 회원가입/로그인
  * req : 계정 정보
  * res : user idx, jwt token
  */
-const login = async (req: Request, res: Response) => {
-  const { snsId, username } = req.body;
 
-  if (!snsId) {
+const login = async (req: Request, res: Response) => {
+  const { snsId, username }: { snsId?: String; username: String } = req.body;
+
+  if (!snsId || !username) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
   }
 
-  const alreadyUser = await userDB.getUserById(snsId);
-  // if (alreadyUser.length) {
-  //   // 해당 email을 가진 유저가 이미 있을 때 - 로그인
-  // }
+  let userIdx = await userDB.getUserById(snsId);
+  if (!userIdx) {
+    userIdx = await userDB.createUser(snsId, username); //없으면 회원가입
+  }
 
-  //없으면 - 회원가입
-  //const user = await userDB.createUser(snsId, username);
-  //const { accesstoken } = ;
+  const accesstoken = '토큰 작업중';
 
   return res.status(statusCode.OK).send(
     util.success(statusCode.OK, resMessage.LOGIN_SUCCESS, {
-      //userIdx: user.userIdx,
-      //accesstoken: accesstoken,
+      userIdx: userIdx,
+      accesstoken: accesstoken,
     }),
   );
 };
