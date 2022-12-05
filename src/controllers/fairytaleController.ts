@@ -42,8 +42,7 @@ const createFirstSentence = async (req: Request, res: Response) => {
 
   try {
     const bookIdx = await fairytaleDB.createBook(userIdx, lengthOfBook, charList, backgroundPlace);
-    //첫 문장을 CONTENTS DB에 저장하는 것 필요
-
+    const saveDB = await fairytaleDB.saveSentence(bookIdx, firstSentence);
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(
       util.success(statusCode.OK, resMessage.OK, {
         bookIdx: bookIdx,
@@ -68,7 +67,9 @@ const createNewSentence = async (req: Request, res: Response) => {
 
   try {
     const outputSentence = await kogpt.makeNewSentence(inputSentence);
-    const saveDB = await fairytaleDB.saveSentences(bookIdx, inputSentence, outputSentence as string); //타입 해결하기
+    let saveDB = await fairytaleDB.saveSentence(bookIdx, inputSentence); //DB에 더 접근을 줄일 수 있는 방법 생각해보기
+    saveDB = await fairytaleDB.saveSentence(bookIdx, outputSentence as string); //타입 해결하기
+
     return res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, outputSentence as string));
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.KoGPT_ERROR));
