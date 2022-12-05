@@ -10,14 +10,15 @@ const _ = require('lodash');
  * 첫 문장 생성 함수
  */
 const createFirstSentence = async (req: Request, res: Response) => {
-  const { numOfPeople, backgroundPlace, lengthOfBook } = req.body;
+  const { userIdx, numOfPeople, backgroundPlace, lengthOfBook } = req.body;
 
-  if (!numOfPeople || !backgroundPlace || !lengthOfBook) {
+  if (!userIdx || !numOfPeople || !backgroundPlace || !lengthOfBook) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
   }
 
   const listOfCharacters = ['피터팬', '신데렐라', '콩쥐', '백설공주', '앨리스', '라푼젤', '헨젤', '흥부'];
   const char = _.sampleSize(listOfCharacters, numOfPeople); //랜덤 캐릭터 최대 2인
+  const charList = char.join();
   const lastNamesGrammer = [];
 
   for (let i = 0; i < char.length; i++) {
@@ -39,14 +40,19 @@ const createFirstSentence = async (req: Request, res: Response) => {
     firstSentence += ` 하루는 ${char[0] + lastNamesGrammer[0][1]} ${backgroundPlace}에 갔어요.`;
   }
 
-  return res.status(statusCode.OK).send(
-    util.success(statusCode.OK, resMessage.OK, {
-      characters: char,
-      length: lengthOfBook,
-      background: backgroundPlace,
-      firstSentence: firstSentence,
-    }),
-  );
+  try {
+    const bookIdx = await fairytaleDB.createBook(userIdx, lengthOfBook, charList, backgroundPlace);
+    //첫 문장을 CONTENTS DB에 저장하는 것 필요
+
+    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(
+      util.success(statusCode.OK, resMessage.OK, {
+        bookIdx: bookIdx,
+        firstSentence: firstSentence,
+      }),
+    );
+  } catch (err) {
+    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
+  }
 };
 
 /*
@@ -54,31 +60,34 @@ const createFirstSentence = async (req: Request, res: Response) => {
  */
 
 const createNewSentence = async (req: Request, res: Response) => {
-  const { inputSentence } = req.body;
+  const { bookIdx, inputSentence } = req.body;
+
+  if (!bookIdx || !inputSentence) {
+    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+  }
 
   try {
-    const result = await kogpt.makeNewSentence(inputSentence);
-    return res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, result as string)); //오류 해결하기
+    const outputSentence = await kogpt.makeNewSentence(inputSentence);
+    const saveDB = await fairytaleDB.saveSentences(bookIdx, inputSentence, outputSentence as string); //타입 해결하기
+    return res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, outputSentence as string));
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.KoGPT_ERROR));
   }
 };
 
 /*
- * 창작 반복 끝난 후 제목 입력 받고 사용자 계정에 완성된 책 생성 함수
+ * 창작 반복 끝난 후 제목 입력 받고 해당 책에 제목/완료상태 업데이트
  */
 const createNewBook = async (req: Request, res: Response) => {
-  const { userIdx, title, lengthOfBook, characters, backgroundPlace, contents } = req.body;
+  const { bookIdx, title } = req.body;
 
-  if (!userIdx || !title || !lengthOfBook || !characters || !backgroundPlace || !contents) {
+  if (!bookIdx || !title) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
   }
 
-  const charList = characters.join();
-
   try {
-    const bookID = await fairytaleDB.createBook(userIdx, title, lengthOfBook, charList, backgroundPlace, contents);
-    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, bookID));
+    const bookID = await fairytaleDB.updateBookTitle(bookIdx, title);
+    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.OK, bookID as Boolean)); //data 삭제하기
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
   }
