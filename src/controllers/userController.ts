@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import util from '../modules/util';
 import statusCode from '../modules/statusCode';
 import resMessage from '../modules/responseMessage';
-import userDB from '../dao/user';
+import userDB from '../model/user';
 const request = require('request');
 //const encrypt = require('../../../lib/crypto');
 //const jwtHandlers = require('../../../lib/jwtHandlers');
