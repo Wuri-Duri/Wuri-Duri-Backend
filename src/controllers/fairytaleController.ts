@@ -65,12 +65,12 @@ const addCoverInfo = async (req: Request, res: Response) => {
   const {
     ticketIdx,
     title,
+    coverImage
   }: {
     ticketIdx: Number;
     title: String;
+    coverImage: String;
   } = req.body;
-
-  const coverImage = (req.file as Express.MulterS3.File).location;
 
   if (!ticketIdx || !title || !coverImage) {
     return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
@@ -78,7 +78,7 @@ const addCoverInfo = async (req: Request, res: Response) => {
 
   try {
     const result = await fairytaleDB.addCoverInfo(ticketIdx, title, coverImage);
-    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.CREATE_TICKET_SUCCESS, true));
+    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.ADD_COVER_SUCCESS, true));
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
   }
