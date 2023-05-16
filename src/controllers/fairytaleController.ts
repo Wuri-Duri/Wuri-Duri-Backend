@@ -25,6 +25,27 @@ const readAllBooks = async (req: Request, res: Response) => {
   }
 };
 
+
+/*
+ * 선택한 책 정보 불러오기
+ */
+
+const readSelectedBook = async (req: Request, res: Response) => {
+  const { ticketIDX }: { ticketIDX?: String } = req.params;
+
+  if (!ticketIDX) {
+    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+  }
+
+  try {
+    const result = await fairytaleDB.readSelectedBook(ticketIDX);
+    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.READ_BOOKLIST_SUCCESS, result as Object));
+  } catch (err) {
+    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
+  }
+};
+
+
 /*
  * 사전 설정 - 등장인물, 배경장소, 길이 선택
  */
@@ -58,6 +79,34 @@ const createNewTicket = async (req: Request, res: Response) => {
 
 
 /*
+ * 턴마다 생성된 문장과 이미지를 저장
+ */
+
+const addNewPage = async (req: Request, res: Response) => {
+  const {
+    ticketIdx,
+    text,
+    img
+  }: {
+    ticketIdx: Number;
+    text: String;
+    img: String;
+  } = req.body;
+
+  if (!ticketIdx || !text || !img) {
+    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, resMessage.NULL_VALUE));
+  }
+
+  try {
+    const result = await fairytaleDB.addNewPage(ticketIdx, text, img);
+    res.status(statusCode.OK).send(util.success(statusCode.OK, resMessage.ADD_NEW_PAGE_SUCCESS, true));
+  } catch (err) {
+    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
+  }
+};
+
+
+/*
  * 커버 등록 - 티켓 제목, 이미지 선택
  */
 
@@ -82,11 +131,12 @@ const addCoverInfo = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, resMessage.NULL_ERROR));
   }
-
 };
 
 export default {
   readAllBooks,
+  readSelectedBook,
   createNewTicket,
+  addNewPage,
   addCoverInfo
 };

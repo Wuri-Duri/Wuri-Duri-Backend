@@ -12,6 +12,18 @@ const readAllBooks = async (userIDX?: String) => {
   }
 };
 
+const readSelectedBook = async (ticketIdx?: String) => {
+  const query = `SELECT text, img FROM Content WHERE ticket_idx = ${ticketIdx}`;
+
+  try {
+    const result = await pool.queryParam(query);
+    return result;
+  } catch (err) {
+    console.log('readSelectedBook ERROR : ', err);
+    throw err;
+  }
+};
+
 const createNewTicket = async (userIdx: Number, characters: String, bgPlace: String, length: Number) => {
   const fields = 'user_idx, characters, bgPlace, length';
   const questions = `?, ?, ?, ?`;
@@ -24,6 +36,22 @@ const createNewTicket = async (userIdx: Number, characters: String, bgPlace: Str
     return insertId;
   } catch (err) {
     console.log('createNewTicket ERROR : ', err);
+    throw err;
+  }
+};
+
+const addNewPage = async (ticketIdx: Number, text: String, img: String) => {
+  const fields = 'text, img, ticket_idx';
+  const questions = `?, ?, ?`;
+  const values = [text, img, ticketIdx];
+  const query = `INSERT INTO Content (${fields}) VALUES (${questions})`;
+
+  try {
+    const result: any = await pool.queryParamArr(query, values);
+    const insertId = result.insertId;
+    return insertId;
+  } catch (err) {
+    console.log('addNewPage ERROR : ', err);
     throw err;
   }
 };
@@ -42,6 +70,8 @@ const addCoverInfo = async (ticketIdx: Number, title: String, coverImage: String
 
 export default {
   readAllBooks,
+  readSelectedBook,
   createNewTicket,
+  addNewPage,
   addCoverInfo,
 };

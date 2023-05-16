@@ -8,6 +8,8 @@ export default {
   READ_BOOKLIST_SUCCESS: '티켓 리스트 정보를 불러왔습니다.',
   CREATE_TICKET_SUCCESS: '새로운 티켓을 생성했습니다.',
   ADD_COVER_SUCCESS: '티켓 커버 정보를 등록했습니다.',
+  ADD_NEW_PAGE_SUCCESS:'새로운 페이지를 저장했습니다.',
+  READ_CONTENTS_SUCCESS: '책 내용을 불러왔습니다.',
 
   // SignIn
   LOGIN_SUCCESS: '로그인 성공',
